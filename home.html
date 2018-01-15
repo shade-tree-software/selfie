@@ -5,52 +5,35 @@
     <title></title>
 </head>
 <body>
-<video autoplay>No Video</video>
+<video autoplay></video>
 <img src="">
-<canvas style="display:none"></canvas>
-<button id="stopButton" type="button">Stop</button>
+<canvas hidden></canvas>
 
 <script>
-    var errorCallback = function (e) {
-        console.log('Reeeejected!', e);
-    };
-    navigator.getUserMedia = navigator.getUserMedia ||
-            navigator.webkitGetUserMedia ||
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia;
-    var video = document.querySelector('video');
-    var stop = document.getElementById('stopButton');
-    var canvas = document.querySelector('canvas');
-    var ctx = canvas.getContext('2d');
-    var localMediaStream = null;
+  var onError = function (e) {
+    console.log('Reeeejected!', e);
+  };
 
-    function snapshot() {
-        if (localMediaStream) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-            // "image/webp" works in Chrome.
-            // Other browsers will fall back to image/png.
-            document.querySelector('img').src = canvas.toDataURL('image/webp');
-        }
+  var video = document.querySelector('video');
+  var canvas = document.querySelector('canvas');
+  var ctx = canvas.getContext('2d');
+
+  function snapshot() {
+    if (video.srcObject) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      document.querySelector('img').src = canvas.toDataURL('image/webp');
     }
+  }
 
-    video.addEventListener('click', snapshot, false);
+  video.addEventListener('click', snapshot, false);
 
-    stop.addEventListener('click', function(){
-        video.src = null;
-    }, false);
+  function initializeVideo(mediaStream) {
+    video.srcObject = mediaStream
+  }
 
-    var videoConfig = {
-        video: true
-    };
-
-    if (navigator.getUserMedia) {
-        navigator.getUserMedia(videoConfig, function (stream) {
-            video.src = window.URL.createObjectURL(stream);
-            localMediaStream = stream;
-        }, errorCallback);
-    }
+  navigator.mediaDevices.getUserMedia({video: {width: 400, height: 300}}).then(initializeVideo).catch(onError);
 </script>
 </body>
 </html>
